@@ -1,0 +1,36 @@
+{
+  "1379060609357844551": {
+    "1187411595115118682": {
+      "count": 3,
+      "warnings": [
+        {
+          "reason": "all_links",
+          "messageContent": "https://youtube.com/@efortuna_pl?si=6fCkDmOBDHZcAwah",
+          "timestamp": "2026-01-19T17:27:42.033Z"
+        },
+        {
+          "reason": "all_links",
+          "messageContent": "https://youtube.com/@efortuna_pl?si=tUqG8TY94X1XDJW4",
+          "timestamp": "2026-01-19T17:28:09.636Z"
+        },
+        {
+          "reason": "all_links",
+          "messageContent": "https://youtube.com/@efortuna_pl?si=WcByl-LafOQnEQ0Z",
+          "timestamp": "2026-01-19T17:28:24.852Z"
+        }
+      ],
+      "lastWarning": "2026-01-19T17:28:24.852Z"
+    },
+    "1176148303084265593": {
+      "count": 1,
+      "warnings": [
+        {
+          "reason": "all_links",
+          "messageContent": "https://ogulnie.ga/pl",
+          "timestamp": "2026-01-27T13:03:16.330Z"
+        }
+      ],
+      "lastWarning": "2026-01-27T13:03:16.330Z"
+    }
+  }
+}

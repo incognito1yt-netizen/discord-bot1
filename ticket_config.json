@@ -1,0 +1,19 @@
+{
+  "1379060609357844551": [
+    {
+      "id": "bug",
+      "name": "Błąd",
+      "emoji": "🐛"
+    },
+    {
+      "id": "alliance",
+      "name": "Sojusz",
+      "emoji": "🤝"
+    },
+    {
+      "id": "pomoc",
+      "name": "Dołaczenie do klanu",
+      "emoji": "🛡️"
+    }
+  ]
+}

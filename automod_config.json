@@ -1,0 +1,26 @@
+{
+  "1379060609357844551": {
+    "enabled": true,
+    "bypassRoleId": null,
+    "warningsThreshold": 3,
+    "filters": {
+      "youtube": {
+        "action": "mute",
+        "duration": "12h"
+      },
+      "discord_invites": {
+        "action": "ban",
+        "duration": "1d"
+      },
+      "all_links": {
+        "action": "off",
+        "duration": null
+      },
+      "profanity": {
+        "action": "mute",
+        "duration": "1h"
+      }
+    },
+    "logChannelId": "1462864316574339115"
+  }
+}
