@@ -45,6 +45,32 @@ export function shouldBypass(member, config) {
     return hasBypass;
 }
 
+async function checkCanModerate(member) {
+    const guild = member.guild;
+
+    // Nie można karać właściciela serwera
+    if (member.id === guild.ownerId) {
+        Logger.warn(`[AUTOMOD] Nie można wykonać akcji na właścicielu serwera (${member.user.tag})`);
+        return { canModerate: false, reason: 'owner' };
+    }
+
+    // Pobierz bota jako member
+    const botMember = await guild.members.fetchMe();
+
+    // Sprawdź hierarchię ról
+    if (member.roles.highest.position >= botMember.roles.highest.position) {
+        Logger.warn(
+            `[AUTOMOD] Nie można wykonać akcji na ${member.user.tag} — ` +
+            `jego rola "${member.roles.highest.name}" (poz. ${member.roles.highest.position}) ` +
+            `jest równa lub wyższa niż rola bota "${botMember.roles.highest.name}" (poz. ${botMember.roles.highest.position}). ` +
+            `Przesuń rolę bota wyżej w Ustawienia serwera → Role.`
+        );
+        return { canModerate: false, reason: 'hierarchy' };
+    }
+
+    return { canModerate: true };
+}
+
 export async function executeAction(member, action, duration, reason) {
     const guild = member.guild;
 
@@ -53,18 +79,44 @@ export async function executeAction(member, action, duration, reason) {
             case 'warn':
                 return { success: true, action: 'warn' };
 
-            case 'mute':
+            case 'mute': {
+                const { canModerate, reason: blockReason } = await checkCanModerate(member);
+                if (!canModerate) {
+                    const msg = blockReason === 'hierarchy'
+                        ? `Rola bota jest za nisko — przesuń ją powyżej roli gracza w ustawieniach serwera.`
+                        : `Nie można wyciszyć właściciela serwera.`;
+                    return { success: false, error: msg };
+                }
+
                 const muteDuration = parseDuration(duration);
                 await member.timeout(muteDuration, reason);
                 Logger.success(`Wyciszono ${member.user.tag} na ${duration} (${reason})`);
                 return { success: true, action: 'mute', duration, durationText: formatDuration(duration) };
+            }
 
-            case 'kick':
+            case 'kick': {
+                const { canModerate, reason: blockReason } = await checkCanModerate(member);
+                if (!canModerate) {
+                    const msg = blockReason === 'hierarchy'
+                        ? `Rola bota jest za nisko — przesuń ją powyżej roli gracza w ustawieniach serwera.`
+                        : `Nie można wyrzucić właściciela serwera.`;
+                    return { success: false, error: msg };
+                }
+
                 await member.kick(reason);
                 Logger.success(`Wyrzucono ${member.user.tag} (${reason})`);
                 return { success: true, action: 'kick' };
+            }
 
-            case 'ban':
+            case 'ban': {
+                const { canModerate, reason: blockReason } = await checkCanModerate(member);
+                if (!canModerate) {
+                    const msg = blockReason === 'hierarchy'
+                        ? `Rola bota jest za nisko — przesuń ją powyżej roli gracza w ustawieniach serwera.`
+                        : `Nie można zbanować właściciela serwera.`;
+                    return { success: false, error: msg };
+                }
+
                 if (duration === 'permanent') {
                     await guild.members.ban(member.user, { reason });
                     Logger.success(`Zbanowano permanentnie ${member.user.tag} (${reason})`);
@@ -85,6 +137,7 @@ export async function executeAction(member, action, duration, reason) {
 
                     return { success: true, action: 'ban', duration, durationText: formatDuration(duration) };
                 }
+            }
 
             case 'off':
                 return { success: false, action: 'off' };
@@ -94,6 +147,16 @@ export async function executeAction(member, action, duration, reason) {
                 return { success: false, action: 'unknown' };
         }
     } catch (error) {
+        // Czytelna informacja dla błędu braku uprawnień
+        if (error.code === 50013) {
+            Logger.error(
+                `[AUTOMOD] Brak uprawnień do wykonania akcji "${action}" na ${member.user.tag}. ` +
+                `Sprawdź hierarchię ról bota w ustawieniach serwera.`,
+                error
+            );
+            return { success: false, error: 'Brak uprawnień — sprawdź hierarchię ról bota.' };
+        }
+
         Logger.error(`Błąd podczas wykonywania akcji ${action} na ${member.user.tag}`, error);
         return { success: false, error: error.message };
     }

@@ -33,6 +33,8 @@ export default {
                 else if (interaction.customId.startsWith('ticket_category_')) await handleTicketCategory(interaction);
                 else if (interaction.customId === 'rules_read') await handleRulesRead(interaction);
                 else if (interaction.customId === 'rules_accept') await handleRulesAccept(interaction);
+                else if (interaction.customId.startsWith('poll_vote_')) await handlePollVote(interaction);
+                else if (interaction.customId === 'giveaway_enter') await handleGiveawayEnter(interaction);
             } catch (error) {
                 Logger.error('Błąd podczas obsługi przycisku', error);
                 if (!interaction.replied && !interaction.deferred) {
@@ -103,9 +105,10 @@ async function handleClearAllCancel(interaction) {
 
 async function handleTicketCreate(interaction) {
     const existingTickets = ticketDB.getTickets(interaction.guild.id);
-    const userTicket = Object.values(existingTickets).find(t => t.userId === interaction.user.id && t.status === 'open');
-    if (userTicket) {
-        return await interaction.reply({ content: '❌ Masz już otwarty ticket!', ephemeral: true });
+    const MAX_TICKETS = 3;
+    const userOpenTickets = Object.values(existingTickets).filter(t => t.userId === interaction.user.id && t.status === 'open');
+    if (userOpenTickets.length >= MAX_TICKETS) {
+        return await interaction.reply({ content: `❌ Masz już otwartych ${MAX_TICKETS} ticketów! Zamknij jeden z nich.`, ephemeral: true });
     }
     const categories = ticketDB.getCategories(interaction.guild.id);
     const embed = new EmbedBuilder()
@@ -231,3 +234,41 @@ async function handleRulesSetupSubmit(interaction) {
         await interaction.reply({ content: '❌ Nie udało się wysłać wiadomości!', ephemeral: true });
     }
 }
+
+async function handlePollVote(interaction) {
+    const optionIndex = interaction.customId.replace('poll_vote_', '');
+
+    for (const row of interaction.message.components) {
+        for (const button of row.components) {
+            if (button.customId === interaction.customId) {
+                const emoji = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'][parseInt(optionIndex)];
+                await interaction.reply({
+                    content: `Oddałeś głos na: ${emoji} ${button.label}`,
+                    ephemeral: true
+                });
+                return;
+            }
+        }
+    }
+}
+
+const activeGiveaways = new Map();
+
+async function handleGiveawayEnter(interaction) {
+    const giveawayId = interaction.message.id;
+    const giveaway = activeGiveaways.get(giveawayId);
+
+    if (!giveaway) {
+        return await interaction.reply({ content: '❌ Ta loteria już się zakończyła!', ephemeral: true });
+    }
+
+    if (giveaway.participants.includes(interaction.user.id)) {
+        giveaway.participants = giveaway.participants.filter(id => id !== interaction.user.id);
+        await interaction.reply({ content: '❌ Wycofałeś się z loterii.', ephemeral: true });
+    } else {
+        giveaway.participants.push(interaction.user.id);
+        await interaction.reply({ content: '✅ Dołączyłeś do loterii!', ephemeral: true });
+    }
+}
+
+export { activeGiveaways };

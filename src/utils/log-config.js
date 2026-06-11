@@ -42,6 +42,10 @@ class LogConfig {
         }
     }
 
+    sanitizeMessage(message) {
+        return message.replace(/@everyone/g, '@\u200beveryone').replace(/@here/g, '@\u200bhere');
+    }
+
     async sendToDiscord(level, message, guildId = null) {
         if (!this.client) return;
 
@@ -72,15 +76,17 @@ class LogConfig {
                     info: '#5865f2'
                 }[level] || '#999999';
 
+                const sanitizedMessage = this.sanitizeMessage(message);
+
                 // Split long messages
-                if (message.length > 2000) {
-                    const chunks = message.match(/.{1,2000}/g) || [];
+                if (sanitizedMessage.length > 2000) {
+                    const chunks = sanitizedMessage.match(/.{1,2000}/g) || [];
                     for (const chunk of chunks) {
                         await channel.send(`${emoji} **[${level.toUpperCase()}]** ${chunk}`);
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                 } else {
-                    await channel.send(`${emoji} **[${level.toUpperCase()}]** ${message}`);
+                    await channel.send(`${emoji} **[${level.toUpperCase()}]** ${sanitizedMessage}`);
                 }
             }
         } catch (error) {

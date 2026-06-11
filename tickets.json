@@ -32,6 +32,13 @@
       "category": "pomoc",
       "createdAt": "2026-01-27T16:27:08.157Z",
       "status": "open"
+    },
+    "1514302203194638336": {
+      "userId": "1176148303084265593",
+      "category": "pomoc",
+      "createdAt": "2026-06-10T16:16:06.791Z",
+      "status": "closed",
+      "closedAt": "2026-06-10T16:16:12.495Z"
     }
   }
 }

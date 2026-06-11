@@ -115,6 +115,77 @@ async function handleClose(interaction) {
         ephemeral: true
     });
 
+    // Fetch all messages from the channel
+    let allMessages = [];
+    let lastMessageId = null;
+    let fetchMore = true;
+
+    while (fetchMore) {
+        const options = { limit: 100 };
+        if (lastMessageId) options.before = lastMessageId;
+
+        const messages = await interaction.channel.messages.fetch(options);
+        if (messages.size === 0) {
+            fetchMore = false;
+        } else {
+            allMessages = allMessages.concat(Array.from(messages.values()));
+            lastMessageId = messages.last().id;
+            if (messages.size < 100) fetchMore = false;
+        }
+    }
+
+    // Sort messages chronologically
+    allMessages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+    // Create .txt content
+    let txtContent = `=== TICKET ZAMKNIĘTY ===\n`;
+    txtContent += `Serwer: ${interaction.guild.name}\n`;
+    txtContent += `Kanał: ${interaction.channel.name}\n`;
+    txtContent += `Kategoria: ${ticket.category || 'Nieznana'}\n`;
+    txtContent += `Utworzony: ${new Date(ticket.createdAt).toLocaleString('pl-PL')}\n`;
+    txtContent += `Zamknięty: ${new Date().toLocaleString('pl-PL')}\n`;
+    txtContent += `Zamknięty przez: ${interaction.user.tag}\n`;
+    txtContent += `========================\n\n`;
+
+    allMessages.forEach(msg => {
+        const timestamp = new Date(msg.createdTimestamp).toLocaleString('pl-PL');
+        txtContent += `[${timestamp}] ${msg.author.tag}: ${msg.content}\n`;
+    });
+
+    // Create .txt file attachment
+    const { AttachmentBuilder } = await import('discord.js');
+    const attachment = new AttachmentBuilder(Buffer.from(txtContent, 'utf-8'), {
+        name: `ticket-${interaction.channel.name}-${Date.now()}.txt`
+    });
+
+    // Send DM to ticket creator
+    try {
+        const creator = await interaction.guild.members.fetch(ticket.userId);
+        if (creator) {
+            const dmEmbed = new EmbedBuilder()
+                .setColor('#ff0000')
+                .setTitle('🔒 Ticket Został Zamknięty')
+                .setDescription(
+                    `Twój ticket na serwerze **${interaction.guild.name}** został zamknięty.\n\n` +
+                    `**Kanał:** ${interaction.channel.name}\n` +
+                    `**Kategoria:** ${ticket.category || 'Nieznana'}\n` +
+                    `**Data zamknięcia:** ${new Date().toLocaleString('pl-PL')}\n` +
+                    `**Zamknięty przez:** ${interaction.user.tag}\n\n` +
+                    `Poniżej znajdziesz plik z historią wiadomości z ticketu.`
+                )
+                .setTimestamp();
+
+            await creator.send({
+                embeds: [dmEmbed],
+                files: [attachment]
+            });
+
+            Logger.info(`Wysłano DM z podsumowaniem ticketa do ${creator.user.tag}`);
+        }
+    } catch (error) {
+        Logger.warn(`Nie udało się wysłać DM do twórcy ticketa: ${error.message}`);
+    }
+
     ticketDB.closeTicket(interaction.guild.id, interaction.channel.id);
 
     const embed = new EmbedBuilder()
@@ -128,13 +199,20 @@ async function handleClose(interaction) {
 
     await interaction.channel.send({ embeds: [embed] });
 
-    Logger.info(`Zamknięto ticket ${interaction.channel.name}`);
+    const channelId = interaction.channel.id;
+    const guildId = interaction.guild.id;
+    const channelName = interaction.channel.name;
+
+    Logger.info(`Zamknięto ticket ${channelName}`);
 
     setTimeout(async () => {
         try {
-            await interaction.channel.delete('Ticket zamknięty');
-            ticketDB.deleteTicket(interaction.guild.id, interaction.channel.id);
-            Logger.success(`Usunięto kanał ticketa ${interaction.channel.name}`);
+            const channel = interaction.guild.channels.cache.get(channelId);
+            if (channel) {
+                await channel.delete('Ticket zamknięty');
+                Logger.success(`Usunięto kanał ticketa ${channelName}`);
+            }
+            ticketDB.deleteTicket(guildId, channelId);
         } catch (error) {
             Logger.error('Błąd podczas usuwania kanału ticketa', error);
         }
