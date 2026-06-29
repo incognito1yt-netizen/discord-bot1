@@ -266,6 +266,12 @@ async function handleRulesAccept(interaction) {
 }
 
 async function handleRulesSetupSubmit(interaction) {
+    if (processedModals.has(interaction.customId)) {
+        return await interaction.reply({ content: '✅ Regulamin został już utworzony!', ephemeral: true }).catch(() => {});
+    }
+    processedModals.add(interaction.customId);
+    setTimeout(() => processedModals.delete(interaction.customId), 60000);
+
     const parts = interaction.customId.split('_');
     const channelId = parts[2];
     const roleId = parts[3];
@@ -365,6 +371,7 @@ async function handlePollVote(interaction) {
 
 const activeGiveaways = new Map();
 const rulesCooldown = new Map();
+const processedModals = new Set();
 
 async function handleGiveawayEnter(interaction) {
     const giveawayId = interaction.message.id;
