@@ -42,10 +42,10 @@ export default {
         try {
             await interaction.showModal(modal);
         } catch (error) {
-            Logger.error('Błąd podczas pokazywania modalu', error);
             if (error.code === 10062 || error.code === 40060) {
                 return;
             }
+            Logger.error('Błąd podczas pokazywania modalu', error);
             await interaction.reply({
                 content: '❌ Nie udało się otworzyć okna regulaminu. Spróbuj ponownie!',
                 ephemeral: true
