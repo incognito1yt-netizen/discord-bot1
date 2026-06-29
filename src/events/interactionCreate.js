@@ -2,6 +2,7 @@ import Logger from '../utils/logger.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ChannelType, PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import ticketDB from '../database/ticket-db.js';
 import rulesDB from '../database/rules-db.js';
+import messagesDB from '../database/messages-db.js';
 
 export default {
     name: 'interactionCreate',
@@ -16,11 +17,16 @@ export default {
                 await command.execute(interaction);
             } catch (error) {
                 Logger.error(`Błąd podczas wykonywania komendy ${interaction.commandName}`, error);
+
+                if (error.code === 10062 || error.code === 40060) {
+                    return;
+                }
+
                 const errorMessage = { content: '❌ Wystąpił błąd podczas wykonywania tej komendy!', ephemeral: true };
                 if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp(errorMessage);
+                    await interaction.followUp(errorMessage).catch(() => {});
                 } else {
-                    await interaction.reply(errorMessage);
+                    await interaction.reply(errorMessage).catch(() => {});
                 }
             }
         }
@@ -36,9 +42,12 @@ export default {
                 else if (interaction.customId.startsWith('poll_vote_')) await handlePollVote(interaction);
                 else if (interaction.customId === 'giveaway_enter') await handleGiveawayEnter(interaction);
             } catch (error) {
+                if (error.code === 10062 || error.code === 40060) {
+                    return;
+                }
                 Logger.error('Błąd podczas obsługi przycisku', error);
                 if (!interaction.replied && !interaction.deferred) {
-                    await interaction.reply({ content: '❌ Wystąpił błąd podczas obsługi tej akcji!', ephemeral: true });
+                    await interaction.reply({ content: '❌ Wystąpił błąd podczas obsługi tej akcji!', ephemeral: true }).catch(() => {});
                 }
             }
         }
@@ -46,9 +55,13 @@ export default {
         if (interaction.isModalSubmit()) {
             try {
                 if (interaction.customId.startsWith('rules_setup_')) await handleRulesSetupSubmit(interaction);
+                else if (interaction.customId.startsWith('messages_edit_')) await handleMessagesEditSubmit(interaction);
             } catch (error) {
+                if (error.code === 10062 || error.code === 40060) {
+                    return;
+                }
                 Logger.error('Błąd podczas obsługi modalu', error);
-                await interaction.reply({ content: '❌ Wystąpił błąd podczas przetwarzania!', ephemeral: true });
+                await interaction.reply({ content: '❌ Wystąpił błąd podczas przetwarzania!', ephemeral: true }).catch(() => {});
             }
         }
     },
@@ -143,13 +156,67 @@ async function handleTicketCategory(interaction) {
             ],
         });
         ticketDB.createTicket(interaction.guild.id, ticketChannel.id, interaction.user.id, categoryId);
-        const welcomeEmbed = new EmbedBuilder()
-            .setColor('#00ff00')
-            .setTitle(`${category.emoji} Ticket: ${category.name}`)
-            .setDescription(`Witaj ${interaction.user}!\n\nKategoria: **${category.name}**\n\nOpisz swój problem. Zespół pomocy wkrótce się odezwie.`)
-            .setFooter({ text: 'Aby zamknąć ticket, moderator użyje /ticket close' })
-            .setTimestamp();
-        await ticketChannel.send({ embeds: [welcomeEmbed] });
+
+        if (categoryId === 'dolaczenie') {
+            const formEmbed = new EmbedBuilder()
+                .setColor('#ff9900')
+                .setTitle('⚔️ Formularz Rekrutacyjny CWR')
+                .setDescription(
+                    `Witaj ${interaction.user}!\n\n` +
+                    `Aby dołączyć do klanu CWR, odpowiedz na poniższe pytania.\n` +
+                    `**Odpowiadaj numerkami (np. 1: Odpowiedź)**\n\n` +
+                    `**1.** Nick z MC\n` +
+                    `**2.** Wiek\n` +
+                    `**3.** Od ilu miesiecy/lat grasz w MC i na jakich wersjach grałeś/aś\n` +
+                    `**4.** Byłeś/aś w innych klanach? (Jak tak to jakich)\n` +
+                    `**5.** Wymień cechy które mogły by się przydać w klanie (lub co mógłbyś/mogłabyś robić w gildii)\n` +
+                    `**6.** Dlaczego akurat ciebie powinniśmy przyjąć (1/2 zdania może być więcej)\n` +
+                    `**7.** Ocen swoje PVP w skali od 1/10\n` +
+                    `**8.** Opisz siebie w kilku zdaniach (min. 1 ROZBUDOWANE zdanie)\n` +
+                    `**9.** Ile czasu jesteś w stanie poświęcić na grę\n` +
+                    `**10.** Dlaczego akurat wybrałeś/aś nas\n` +
+                    `**11.** Używasz cheatów czy grasz "legitnie"? (bez lipy można napisać prawdę nic poza ticketem nie wychodzi)\n` +
+                    `**12.** Wyślij ss (screenshot) eq i ec\n\n` +
+                    `⚠️ **Pamiętaj:** Odpowiadaj numerkami, abyśmy mogli łatwo przejrzeć Twoje odpowiedzi!`
+                )
+                .setFooter({ text: 'Formularz Rekrutacyjny CWR | Odpowiadaj numerkami!' })
+                .setTimestamp();
+
+            const msg = await ticketChannel.send({ embeds: [formEmbed] });
+
+            const recruitmentDescription = `Witaj ${interaction.user}!\n\n` +
+                `Aby dołączyć do klanu CWR, odpowiedz na poniższe pytania.\n` +
+                `**Odpowiadaj numerkami (np. 1: Odpowiedź)**\n\n` +
+                `**1.** Nick z MC\n` +
+                `**2.** Wiek\n` +
+                `**3.** Od ilu miesiecy/lat grasz w MC i na jakich wersjach grałeś/aś\n` +
+                `**4.** Byłeś/aś w innych klanach? (Jak tak to jakich)\n` +
+                `**5.** Wymień cechy które mogły by się przydać w klanie (lub co mógłbyś/mogłabyś robić w gildii)\n` +
+                `**6.** Dlaczego akurat ciebie powinniśmy przyjąć (1/2 zdania może być więcej)\n` +
+                `**7.** Ocen swoje PVP w skali od 1/10\n` +
+                `**8.** Opisz siebie w kilku zdaniach (min. 1 ROZBUDOWANE zdanie)\n` +
+                `**9.** Ile czasu jesteś w stanie poświęcić na grę\n` +
+                `**10.** Dlaczego akurat wybrałeś/aś nas\n` +
+                `**11.** Używasz cheatów czy grasz "legitnie"? (bez lipy można napisać prawdę nic poza ticketem nie wychodzi)\n` +
+                `**12.** Wyślij ss (screenshot) eq i ec\n\n` +
+                `⚠️ **Pamiętaj:** Odpowiadaj numerkami, abyśmy mogli łatwo przejrzeć Twoje odpowiedzi!`;
+
+            messagesDB.trackMessage(interaction.guild.id, msg.id, ticketChannel.id, 'recruitment', {
+                title: '⚔️ Formularz Rekrutacyjny CWR',
+                description: recruitmentDescription,
+                color: '#ff9900',
+                footer: 'Formularz Rekrutacyjny CWR | Odpowiadaj numerkami!'
+            });
+        } else {
+            const welcomeEmbed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle(`${category.emoji} Ticket: ${category.name}`)
+                .setDescription(`Witaj ${interaction.user}!\n\nKategoria: **${category.name}**\n\nOpisz swój problem. Zespół pomocy wkrótce się odezwie.`)
+                .setFooter({ text: 'Aby zamknąć ticket, moderator użyje /ticket close' })
+                .setTimestamp();
+            await ticketChannel.send({ embeds: [welcomeEmbed] });
+        }
+
         await interaction.editReply({ content: `✅ Utworzono ticket: ${ticketChannel}` });
         Logger.success(`Utworzono ticket dla ${interaction.user.tag}`);
     } catch (error) {
@@ -161,7 +228,7 @@ async function handleTicketCategory(interaction) {
 async function handleRulesRead(interaction) {
     const config = rulesDB.getConfig(interaction.guild.id);
     if (!config) {
-        return await interaction.reply({ content: '❌ System regulaminu nie jest skonfigurowany!', ephemeral: true });
+        return await interaction.reply({ content: '❌ System regulaminu nie jest skonfigurowany!', ephemeral: true }).catch(() => {});
     }
     const embed = new EmbedBuilder()
         .setColor('#5865f2')
@@ -174,28 +241,27 @@ async function handleRulesRead(interaction) {
         .setLabel('✅ Akceptuję Regulamin')
         .setStyle(ButtonStyle.Success);
     const row = new ActionRowBuilder().addComponents(acceptButton);
-    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true }).catch(() => {});
 }
 
 async function handleRulesAccept(interaction) {
     const config = rulesDB.getConfig(interaction.guild.id);
     if (!config) {
-        return await interaction.update({ content: '❌ System regulaminu nie jest skonfigurowany!', embeds: [], components: [] });
+        return await interaction.update({ content: '❌ System regulaminu nie jest skonfigurowany!', embeds: [], components: [] }).catch(() => {});
     }
     try {
         const role = interaction.guild.roles.cache.get(config.roleId);
         if (!role) {
-            return await interaction.update({ content: '❌ Nie znaleziono roli!', embeds: [], components: [] });
+            return await interaction.update({ content: '❌ Nie znaleziono roli!', embeds: [], components: [] }).catch(() => {});
         }
         if (interaction.member.roles.cache.has(role.id)) {
-            return await interaction.update({ content: '✅ Już zaakceptowałeś regulamin!', embeds: [], components: [] });
+            return await interaction.update({ content: '✅ Już zaakceptowałeś regulamin!', embeds: [], components: [] }).catch(() => {});
         }
         await interaction.member.roles.add(role);
-        await interaction.update({ content: `✅ **Regulamin zaakceptowany!**\n\nOtrzymałeś rolę ${role}.\nWitamy! 🎉`, embeds: [], components: [] });
+        await interaction.update({ content: `✅ **Regulamin zaakceptowany!**\n\nOtrzymałeś rolę ${role}.\nWitamy! 🎉`, embeds: [], components: [] }).catch(() => {});
         Logger.success(`${interaction.user.tag} zaakceptował regulamin`);
     } catch (error) {
         Logger.error('Błąd podczas nadawania roli', error);
-        await interaction.update({ content: '❌ Nie udało się nadać roli!', embeds: [], components: [] });
     }
 }
 
@@ -207,31 +273,40 @@ async function handleRulesSetupSubmit(interaction) {
     const channel = interaction.guild.channels.cache.get(channelId);
     const role = interaction.guild.roles.cache.get(roleId);
     if (!channel || !role) {
-        return await interaction.reply({ content: '❌ Nie znaleziono kanału lub roli!', ephemeral: true });
+        return await interaction.reply({ content: '❌ Nie znaleziono kanału lub roli!', ephemeral: true }).catch(() => {});
     }
     const success = rulesDB.setConfig(interaction.guild.id, channelId, roleId, rulesText);
     if (!success) {
-        return await interaction.reply({ content: '❌ Nie udało się zapisać konfiguracji!', ephemeral: true });
+        return await interaction.reply({ content: '❌ Nie udało się zapisać konfiguracji!', ephemeral: true }).catch(() => {});
     }
+    const embedDescription = `**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę <@&${role.id}>.`;
     const embed = new EmbedBuilder()
         .setColor('#5865f2')
         .setTitle('📜 Regulamin Serwera')
-        .setDescription(`**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę ${role}.`)
+        .setDescription(embedDescription)
         .setFooter({ text: 'System Akceptacji Regulaminu' })
         .setTimestamp();
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId('rules_read').setLabel('📜 Przeczytaj Regulamin').setStyle(ButtonStyle.Primary)
     );
     try {
-        await channel.send({ embeds: [embed], components: [row] });
+        const msg = await channel.send({ embeds: [embed], components: [row] });
+
+        messagesDB.trackMessage(interaction.guild.id, msg.id, channelId, 'rules_setup', {
+            title: '📜 Regulamin Serwera',
+            description: `**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę {role}.`,
+            color: '#5865f2',
+            footer: 'System Akceptacji Regulaminu',
+            roleName: role.name
+        });
+
         await interaction.reply({
             content: `✅ **System regulaminu skonfigurowany!**\n\n📍 Kanał: ${channel}\n🎭 Rola: ${role}\n📝 Regulamin: ${rulesText.length} znaków`,
             ephemeral: true
-        });
+        }).catch(() => {});
         Logger.success(`Skonfigurowano regulamin na ${interaction.guild.name}`);
     } catch (error) {
         Logger.error('Błąd podczas wysyłania wiadomości', error);
-        await interaction.reply({ content: '❌ Nie udało się wysłać wiadomości!', ephemeral: true });
     }
 }
 
@@ -268,6 +343,65 @@ async function handleGiveawayEnter(interaction) {
     } else {
         giveaway.participants.push(interaction.user.id);
         await interaction.reply({ content: '✅ Dołączyłeś do loterii!', ephemeral: true });
+    }
+}
+
+async function handleMessagesEditSubmit(interaction) {
+    const parts = interaction.customId.split('_');
+    const messageId = parts[2];
+    const guildId = parts[3];
+
+    const tracked = messagesDB.getMessage(guildId, messageId);
+
+    if (!tracked) {
+        return await interaction.reply({ content: '❌ Nie znaleziono wiadomości w bazie!', ephemeral: true }).catch(() => {});
+    }
+
+    const newTitle = interaction.fields.getTextInputValue('msg_title') || tracked.config.title;
+    const newColor = interaction.fields.getTextInputValue('msg_color') || tracked.config.color;
+    const newFooter = interaction.fields.getTextInputValue('msg_footer') || tracked.config.footer;
+    let newDescription = interaction.fields.getTextInputValue('msg_description') || tracked.config.description;
+    const roleName = interaction.fields.getTextInputValue('msg_role') || tracked.config.roleName;
+
+    if (roleName) {
+        const role = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === roleName.toLowerCase());
+        if (role) {
+            newDescription = newDescription.replace(/{role}/g, `<@&${role.id}>`);
+        }
+    }
+
+    const newConfig = {
+        title: newTitle,
+        color: newColor,
+        footer: newFooter,
+        description: newDescription,
+        roleName: roleName
+    };
+
+    messagesDB.updateMessage(guildId, messageId, newConfig);
+
+    try {
+        const channel = interaction.guild.channels.cache.get(tracked.channelId);
+        if (!channel) {
+            return await interaction.reply({ content: '❌ Nie znaleziono kanału!', ephemeral: true }).catch(() => {});
+        }
+
+        const message = await channel.messages.fetch(messageId);
+
+        const newEmbed = new EmbedBuilder()
+            .setColor(newColor)
+            .setTitle(newTitle)
+            .setDescription(newDescription)
+            .setFooter({ text: newFooter })
+            .setTimestamp();
+
+        await message.edit({ embeds: [newEmbed] });
+
+        await interaction.reply({ content: '✅ Zaktualizowano wiadomość!', ephemeral: true }).catch(() => {});
+        Logger.success(`Zaktualizowano wiadomość ${messageId} na ${interaction.guild.name}`);
+    } catch (error) {
+        Logger.error('Błąd podczas aktualizacji wiadomości', error);
+        await interaction.reply({ content: '❌ Nie udało się zaktualizować wiadomości!', ephemeral: true }).catch(() => {});
     }
 }
 

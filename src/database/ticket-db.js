@@ -106,7 +106,8 @@ class TicketDatabase {
     getDefaultCategories() {
         return [
             { id: 'bug', name: 'Błąd', emoji: '🐛' },
-            { id: 'alliance', name: 'Sojusz', emoji: '🤝' }
+            { id: 'alliance', name: 'Sojusz', emoji: '🤝' },
+            { id: 'dolaczenie', name: 'Dołączenie do klanu', emoji: '⚔️' }
         ];
     }
 

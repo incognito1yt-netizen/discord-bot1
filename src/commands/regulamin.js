@@ -39,6 +39,10 @@ export default {
         const row = new ActionRowBuilder().addComponents(rulesInput);
         modal.addComponents(row);
 
-        await interaction.showModal(modal);
+        try {
+            await interaction.showModal(modal);
+        } catch (error) {
+            Logger.error('Błąd podczas pokazywania modalu', error);
+        }
     },
 };

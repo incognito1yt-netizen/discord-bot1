@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import ticketDB from '../database/ticket-db.js';
+import messagesDB from '../database/messages-db.js';
 import Logger from '../utils/logger.js';
 
 export default {
@@ -76,7 +77,20 @@ async function handleSetup(interaction) {
         );
 
     try {
-        await channel.send({ embeds: [embed], components: [row] });
+        const msg = await channel.send({ embeds: [embed], components: [row] });
+
+        const description = '**Potrzebujesz pomocy?**\n\n' +
+            'Kliknij przycisk poniżej aby utworzyć ticket.\n' +
+            'Po kliknięciu wybierz kategorię:\n\n' +
+            categories.map(c => `${c.emoji} **${c.name}**`).join('\n') + '\n\n' +
+            '⚠️ Niepotrzebne tickety będą zamykane!';
+
+        messagesDB.trackMessage(interaction.guild.id, msg.id, channel.id, 'ticket_panel', {
+            title: '🎫 System Ticketów',
+            description: description,
+            color: '#5865f2',
+            footer: 'Kliknij przycisk aby rozpocząć'
+        });
 
         await interaction.reply({
             content: `✅ Wysłano wiadomość z systemem ticketów na ${channel}`,

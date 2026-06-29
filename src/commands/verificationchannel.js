@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import database from '../database/db.js';
+import messagesDB from '../database/messages-db.js';
 import config from '../config.js';
 import Logger from '../utils/logger.js';
 
@@ -82,13 +83,21 @@ export default {
                 .setDescription(
                     `Witaj na serwerze **${interaction.guild.name}**!\n\n` +
                     `Aby uzyskać dostęp do serwera, zareaguj na tę wiadomość emoji ${config.verificationEmoji}\n\n` +
-                    `Po weryfikacji otrzymasz rolę: **${role.name}**`
+                    `Po weryfikacji otrzymasz rolę @${role.name}`
                 )
                 .setFooter({ text: 'System weryfikacji' })
                 .setTimestamp();
 
             // Send the verification message
             const message = await channel.send({ embeds: [embed] });
+
+            // Track the message for editing
+            messagesDB.trackMessage(interaction.guild.id, message.id, channel.id, 'verification', {
+                title: '🛡️ Weryfikacja',
+                description: `Witaj na serwerze **${interaction.guild.name}**!\n\nAby uzyskać dostęp do serwera, zareaguj na tę wiadomość emoji ${config.verificationEmoji}\n\nPo weryfikacji otrzymasz rolę @${role.name}`,
+                color: '#00ff00',
+                footer: 'System weryfikacji'
+            });
 
             // Add reaction
             await message.react(config.verificationEmoji);
