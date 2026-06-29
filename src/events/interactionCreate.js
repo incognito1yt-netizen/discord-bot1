@@ -275,6 +275,14 @@ async function handleRulesSetupSubmit(interaction) {
     if (!channel || !role) {
         return await interaction.reply({ content: '❌ Nie znaleziono kanału lub roli!', ephemeral: true }).catch(() => {});
     }
+
+    const cooldownKey = `${interaction.guild.id}_${channelId}`;
+    const lastCreated = rulesCooldown.get(cooldownKey);
+    if (lastCreated && Date.now() - lastCreated < 30000) {
+        return await interaction.reply({ content: '⏳ Poczekaj chwilę przed utworzeniem kolejnego regulaminu!', ephemeral: true }).catch(() => {});
+    }
+    rulesCooldown.set(cooldownKey, Date.now());
+
     const success = rulesDB.setConfig(interaction.guild.id, channelId, roleId, rulesText);
     if (!success) {
         return await interaction.reply({ content: '❌ Nie udało się zapisać konfiguracji!', ephemeral: true }).catch(() => {});
@@ -343,6 +351,7 @@ async function handlePollVote(interaction) {
 }
 
 const activeGiveaways = new Map();
+const rulesCooldown = new Map();
 
 async function handleGiveawayEnter(interaction) {
     const giveawayId = interaction.message.id;
