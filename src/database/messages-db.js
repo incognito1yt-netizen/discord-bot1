@@ -90,6 +90,37 @@ class MessagesDB {
             return {};
         }
     }
+
+    getMessagesByType(guildId, type) {
+        try {
+            const data = JSON.parse(fs.readFileSync(MESSAGES_PATH, 'utf8'));
+            const guildMessages = data[guildId] || {};
+            const result = {};
+            for (const [msgId, msg] of Object.entries(guildMessages)) {
+                if (msg.type === type) {
+                    result[msgId] = msg;
+                }
+            }
+            return result;
+        } catch (error) {
+            return {};
+        }
+    }
+
+    deleteMessage(guildId, messageId) {
+        try {
+            const data = JSON.parse(fs.readFileSync(MESSAGES_PATH, 'utf8'));
+            if (data[guildId]?.[messageId]) {
+                delete data[guildId][messageId];
+                fs.writeFileSync(MESSAGES_PATH, JSON.stringify(data, null, 2), 'utf8');
+                return true;
+            }
+            return false;
+        } catch (error) {
+            Logger.error('Błąd podczas usuwania wiadomości', error);
+            return false;
+        }
+    }
 }
 
 export default new MessagesDB();

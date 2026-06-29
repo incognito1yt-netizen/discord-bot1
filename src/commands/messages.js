@@ -53,8 +53,17 @@ async function handleEdit(interaction) {
     if (!referencedMessage) {
         try {
             const messages = await interaction.channel.messages.fetch({ limit: 20 });
+            const tracked = messagesDB.getAllMessages(interaction.guild.id);
+            const trackedIds = Object.keys(tracked);
             const botMessages = messages.filter(m => m.author.bot && m.author.id === interaction.client.user.id);
-            if (botMessages.size > 0) {
+            for (const [id, msg] of botMessages) {
+                if (trackedIds.includes(id)) {
+                    referencedMessage = msg;
+                    Logger.info(`Użyto tracked wiadomości bota: ${referencedMessage.id}`);
+                    break;
+                }
+            }
+            if (!referencedMessage && botMessages.size > 0) {
                 referencedMessage = botMessages.first();
                 Logger.info(`Użyto ostatniej wiadomości bota: ${referencedMessage.id}`);
             }
