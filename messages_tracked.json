@@ -1,16 +1,1 @@
-{
-  "1379060609357844551": {
-    "1521184640596050022": {
-      "type": "rules_setup",
-      "channelId": "1379061066029465691",
-      "config": {
-        "title": "📜 Regulamin Serwera",
-        "description": "**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę {role}.",
-        "color": "#5865f2",
-        "footer": "System Akceptacji Regulaminu",
-        "roleName": "zweryfikowany"
-      },
-      "trackedAt": "2026-06-29T16:04:14.819Z"
-    }
-  }
-}
+{}

@@ -292,15 +292,28 @@ async function handleRulesSetupSubmit(interaction) {
     for (const [msgId, msg] of Object.entries(existingRules)) {
         if (msg.channelId === channelId) {
             try {
-                const channel = interaction.guild.channels.cache.get(channelId);
-                if (channel) {
-                    const oldMsg = await channel.messages.fetch(msgId).catch(() => null);
+                const ch = interaction.guild.channels.cache.get(channelId);
+                if (ch) {
+                    const oldMsg = await ch.messages.fetch(msgId).catch(() => null);
                     if (oldMsg) await oldMsg.delete().catch(() => {});
                 }
             } catch (e) {}
             messagesDB.deleteMessage(interaction.guild.id, msgId);
         }
     }
+
+    try {
+        const recentMessages = await channel.messages.fetch({ limit: 20 });
+        for (const [, msg] of recentMessages) {
+            if (msg.author.id === interaction.client.user.id && msg.embeds.length > 0) {
+                const title = msg.embeds[0].title || '';
+                if (title.includes('Regulamin')) {
+                    await msg.delete().catch(() => {});
+                    messagesDB.deleteMessage(interaction.guild.id, msg.id);
+                }
+            }
+        }
+    } catch (e) {}
 
     const embedDescription = `**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę <@&${role.id}>.`;
     const embed = new EmbedBuilder()
