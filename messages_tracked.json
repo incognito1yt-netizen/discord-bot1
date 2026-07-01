@@ -1,1 +1,39 @@
-{}
+{
+  "1379060609357844551": {
+    "1521187714328821842": {
+      "type": "rules_setup",
+      "channelId": "1379061066029465691",
+      "config": {
+        "title": "📜 Regulamin Serwera",
+        "description": "**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę {role}.",
+        "color": "#5865f2",
+        "footer": "System Akceptacji Regulaminu",
+        "roleName": "zweryfikowany"
+      },
+      "trackedAt": "2026-06-29T16:16:27.699Z"
+    },
+    "1521768556793040897": {
+      "type": "rules_setup",
+      "channelId": "1521767751033557042",
+      "config": {
+        "title": "📜 Regulamin Serwera",
+        "description": "**Witaj na serwerze!**\n\nAby uzyskać dostęp, musisz zaakceptować regulamin.\n\n**Krok 1:** Kliknij przycisk poniżej\n**Krok 2:** Przeczytaj cały regulamin\n**Krok 3:** Kliknij ✅ Akceptuję Regulamin\n\nPo akceptacji otrzymasz rolę {role}.",
+        "color": "#5865f2",
+        "footer": "System Akceptacji Regulaminu",
+        "roleName": "zweryfikowany"
+      },
+      "trackedAt": "2026-07-01T06:44:30.291Z"
+    },
+    "1521768917478014977": {
+      "type": "ticket_panel",
+      "channelId": "1463055159142645874",
+      "config": {
+        "title": "🎫 System Ticketów",
+        "description": "**Potrzebujesz pomocy?**\n\nKliknij przycisk poniżej aby utworzyć ticket.\nPo kliknięciu wybierz kategorię:\n\n🐛 **Błąd**\n🤝 **Sojusz**\n🛡️ **Dołaczenie do klanu**\n\n⚠️ Niepotrzebne tickety będą zamykane!",
+        "color": "#5865f2",
+        "footer": "Kliknij przycisk aby rozpocząć"
+      },
+      "trackedAt": "2026-07-01T06:45:56.274Z"
+    }
+  }
+}
