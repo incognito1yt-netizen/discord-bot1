@@ -182,31 +182,35 @@ async function handleTicketCategory(interaction) {
                 .setFooter({ text: 'Formularz Rekrutacyjny CWR | Odpowiadaj numerkami!' })
                 .setTimestamp();
 
-            const msg = await ticketChannel.send({ embeds: [formEmbed] });
+            try {
+                const msg = await ticketChannel.send({ embeds: [formEmbed] });
 
-            const recruitmentDescription = `Witaj ${interaction.user}!\n\n` +
-                `Aby dołączyć do klanu CWR, odpowiedz na poniższe pytania.\n` +
-                `**Odpowiadaj numerkami (np. 1: Odpowiedź)**\n\n` +
-                `**1.** Nick z MC\n` +
-                `**2.** Wiek\n` +
-                `**3.** Od ilu miesiecy/lat grasz w MC i na jakich wersjach grałeś/aś\n` +
-                `**4.** Byłeś/aś w innych klanach? (Jak tak to jakich)\n` +
-                `**5.** Wymień cechy które mogły by się przydać w klanie (lub co mógłbyś/mogłabyś robić w gildii)\n` +
-                `**6.** Dlaczego akurat ciebie powinniśmy przyjąć (1/2 zdania może być więcej)\n` +
-                `**7.** Ocen swoje PVP w skali od 1/10\n` +
-                `**8.** Opisz siebie w kilku zdaniach (min. 1 ROZBUDOWANE zdanie)\n` +
-                `**9.** Ile czasu jesteś w stanie poświęcić na grę\n` +
-                `**10.** Dlaczego akurat wybrałeś/aś nas\n` +
-                `**11.** Używasz cheatów czy grasz "legitnie"? (bez lipy można napisać prawdę nic poza ticketem nie wychodzi)\n` +
-                `**12.** Wyślij ss (screenshot) eq i ec\n\n` +
-                `⚠️ **Pamiętaj:** Odpowiadaj numerkami, abyśmy mogli łatwo przejrzeć Twoje odpowiedzi!`;
+                const recruitmentDescription = `Witaj ${interaction.user}!\n\n` +
+                    `Aby dołączyć do klanu CWR, odpowiedz na poniższe pytania.\n` +
+                    `**Odpowiadaj numerkami (np. 1: Odpowiedź)**\n\n` +
+                    `**1.** Nick z MC\n` +
+                    `**2.** Wiek\n` +
+                    `**3.** Od ilu miesiecy/lat grasz w MC i na jakich wersjach grałeś/aś\n` +
+                    `**4.** Byłeś/aś w innych klanach? (Jak tak to jakich)\n` +
+                    `**5.** Wymień cechy które mogły by się przydać w klanie (lub co mógłbyś/mogłabyś robić w gildii)\n` +
+                    `**6.** Dlaczego akurat ciebie powinniśmy przyjąć (1/2 zdania może być więcej)\n` +
+                    `**7.** Ocen swoje PVP w skali od 1/10\n` +
+                    `**8.** Opisz siebie w kilku zdaniach (min. 1 ROZBUDOWANE zdanie)\n` +
+                    `**9.** Ile czasu jesteś w stanie poświęcić na grę\n` +
+                    `**10.** Dlaczego akurat wybrałeś/aś nas\n` +
+                    `**11.** Używasz cheatów czy grasz "legitnie"? (bez lipy można napisać prawdę nic poza ticketem nie wychodzi)\n` +
+                    `**12.** Wyślij ss (screenshot) eq i ec\n\n` +
+                    `⚠️ **Pamiętaj:** Odpowiadaj numerkami, abyśmy mogli łatwo przejrzeć Twoje odpowiedzi!`;
 
-            messagesDB.trackMessage(interaction.guild.id, msg.id, ticketChannel.id, 'recruitment', {
-                title: '⚔️ Formularz Rekrutacyjny CWR',
-                description: recruitmentDescription,
-                color: '#ff9900',
-                footer: 'Formularz Rekrutacyjny CWR | Odpowiadaj numerkami!'
-            });
+                messagesDB.trackMessage(interaction.guild.id, msg.id, ticketChannel.id, 'recruitment', {
+                    title: '⚔️ Formularz Rekrutacyjny CWR',
+                    description: recruitmentDescription,
+                    color: '#ff9900',
+                    footer: 'Formularz Rekrutacyjny CWR | Odpowiadaj numerkami!'
+                });
+            } catch (error) {
+                Logger.error('Błąd podczas wysyłania formularza rekrutacyjnego', error);
+            }
         } else {
             const welcomeEmbed = new EmbedBuilder()
                 .setColor('#00ff00')

@@ -39,20 +39,6 @@
       "createdAt": "2026-06-10T16:16:06.791Z",
       "status": "closed",
       "closedAt": "2026-06-10T16:16:12.495Z"
-    },
-    "1521768940978573375": {
-      "userId": "1176148303084265593",
-      "category": "pomoc",
-      "createdAt": "2026-07-01T06:46:02.233Z",
-      "status": "closed",
-      "closedAt": "2026-07-01T06:55:23.240Z"
-    },
-    "1521770948909600788": {
-      "userId": "1176148303084265593",
-      "category": "dolaczenie",
-      "createdAt": "2026-07-01T06:54:00.559Z",
-      "status": "closed",
-      "closedAt": "2026-07-01T06:55:27.308Z"
     }
   }
 }
