@@ -3,6 +3,8 @@ import ticketDB from '../database/ticket-db.js';
 import messagesDB from '../database/messages-db.js';
 import Logger from '../utils/logger.js';
 
+const ticketSetupCooldown = new Map();
+
 export default {
     data: new SlashCommandBuilder()
         .setName('ticket')
@@ -53,6 +55,13 @@ async function handleSetup(interaction) {
     }
 
     await interaction.deferReply({ ephemeral: true }).catch(() => {});
+
+    const cooldownKey = `${interaction.guild.id}_${channel.id}`;
+    const lastCreated = ticketSetupCooldown.get(cooldownKey);
+    if (lastCreated && Date.now() - lastCreated < 30000) {
+        return await interaction.editReply({ content: '⏳ Poczekaj chwilę przed wysłaniem kolejnego panelu ticketów!' }).catch(() => {});
+    }
+    ticketSetupCooldown.set(cooldownKey, Date.now());
 
     // Get categories
     const categories = ticketDB.getCategories(interaction.guild.id);

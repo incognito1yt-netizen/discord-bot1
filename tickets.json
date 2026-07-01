@@ -45,6 +45,12 @@
       "category": "pomoc",
       "createdAt": "2026-07-01T06:46:02.233Z",
       "status": "open"
+    },
+    "1521770349526515914": {
+      "userId": "1176148303084265593",
+      "category": "dolaczenie",
+      "createdAt": "2026-07-01T06:51:37.668Z",
+      "status": "open"
     }
   }
 }
