@@ -91,10 +91,12 @@ class TicketDatabase {
     // Category management
     getCategories(guildId) {
         try {
+            if (!fs.existsSync(TICKET_CONFIG_PATH)) {
+                return this.getDefaultCategories();
+            }
             const data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
             return data[guildId] || this.getDefaultCategories();
         } catch (error) {
-            Logger.error('Błąd podczas odczytywania kategorii ticketów', error);
             return this.getDefaultCategories();
         }
     }

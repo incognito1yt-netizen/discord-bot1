@@ -158,7 +158,7 @@ async function handleTicketCategory(interaction) {
         });
         ticketDB.createTicket(interaction.guild.id, ticketChannel.id, interaction.user.id, categoryId);
 
-        if (categoryId === 'dolaczenie') {
+        if (categoryId === 'dolaczenie' || categoryId === 'pomoc') {
             const formEmbed = new EmbedBuilder()
                 .setColor('#ff9900')
                 .setTitle('⚔️ Formularz Rekrutacyjny CWR')
