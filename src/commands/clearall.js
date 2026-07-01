@@ -19,7 +19,7 @@ export default {
             return await interaction.reply({
                 content: '❌ Nie masz uprawnień do użycia tej komendy! Wymagane uprawnienie: **ADMINISTRATOR**',
                 ephemeral: true
-            });
+            }).catch(() => {});
         }
 
         const channel = interaction.options.getChannel('kanał');
@@ -29,7 +29,7 @@ export default {
             return await interaction.reply({
                 content: '❌ Wybrany kanał nie jest kanałem tekstowym!',
                 ephemeral: true
-            });
+            }).catch(() => {});
         }
 
         // Check if bot has permissions in that channel
@@ -39,7 +39,7 @@ export default {
             return await interaction.reply({
                 content: '❌ Bot nie ma wystarczających uprawnień w tym kanale! Wymagane: **VIEW_CHANNEL**, **MANAGE_MESSAGES**',
                 ephemeral: true
-            });
+            }).catch(() => {});
         }
 
         // Create confirmation buttons
@@ -62,7 +62,7 @@ export default {
             content: `⚠️ **UWAGA!** Czy na pewno chcesz usunąć wszystkie wiadomości z kanału ${channel}?\n\nTa akcja jest nieodwracalna!`,
             components: [row],
             ephemeral: true
-        });
+        }).catch(() => {});
 
         Logger.info(`${interaction.user.tag} zainicjował usuwanie wiadomości z kanału ${channel.name}`);
     },

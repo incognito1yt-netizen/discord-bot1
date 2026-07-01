@@ -34,6 +34,17 @@
         "footer": "Kliknij przycisk aby rozpocząć"
       },
       "trackedAt": "2026-07-01T06:45:56.274Z"
+    },
+    "1521769622901227541": {
+      "type": "ticket_panel",
+      "channelId": "1521769575954382850",
+      "config": {
+        "title": "🎫 System Ticketów",
+        "description": "**Potrzebujesz pomocy?**\n\nKliknij przycisk poniżej aby utworzyć ticket.\nPo kliknięciu wybierz kategorię:\n\n🐛 **Błąd**\n🤝 **Sojusz**\n⚔️ **Dołączenie do klanu**\n\n⚠️ Niepotrzebne tickety będą zamykane!",
+        "color": "#5865f2",
+        "footer": "Kliknij przycisk aby rozpocząć"
+      },
+      "trackedAt": "2026-07-01T06:48:44.666Z"
     }
   }
 }

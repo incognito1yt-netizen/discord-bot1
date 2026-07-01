@@ -49,8 +49,10 @@ async function handleSetup(interaction) {
         return await interaction.reply({
             content: '❌ Wybrany kanał nie jest kanałem tekstowym!',
             ephemeral: true
-        });
+        }).catch(() => {});
     }
+
+    await interaction.deferReply({ ephemeral: true }).catch(() => {});
 
     // Get categories
     const categories = ticketDB.getCategories(interaction.guild.id);
@@ -92,18 +94,16 @@ async function handleSetup(interaction) {
             footer: 'Kliknij przycisk aby rozpocząć'
         });
 
-        await interaction.reply({
-            content: `✅ Wysłano wiadomość z systemem ticketów na ${channel}`,
-            ephemeral: true
-        });
+        await interaction.editReply({
+            content: `✅ Wysłano wiadomość z systemem ticketów na ${channel}`
+        }).catch(() => {});
 
         Logger.success(`Utworzono panel ticketów na kanale ${channel.name}`);
     } catch (error) {
         Logger.error('Błąd podczas wysyłania panelu ticketów', error);
-        await interaction.reply({
-            content: '❌ Nie udało się wysłać wiadomości. Sprawdź uprawnienia bota.',
-            ephemeral: true
-        });
+        await interaction.editReply({
+            content: '❌ Nie udało się wysłać wiadomości. Sprawdź uprawnienia bota.'
+        }).catch(() => {});
     }
 }
 
@@ -114,20 +114,20 @@ async function handleClose(interaction) {
         return await interaction.reply({
             content: '❌ Ten kanał nie jest ticketem!',
             ephemeral: true
-        });
+        }).catch(() => {});
     }
 
     if (ticket.status === 'closed') {
         return await interaction.reply({
             content: '❌ Ten ticket jest już zamknięty!',
             ephemeral: true
-        });
+        }).catch(() => {});
     }
 
     await interaction.reply({
         content: '🔒 Zamykanie ticketa...',
         ephemeral: true
-    });
+    }).catch(() => {});
 
     // Fetch all messages from the channel
     let allMessages = [];
@@ -245,7 +245,7 @@ async function handleOpcje(interaction) {
                 return await interaction.reply({
                     content: '❌ Musisz podać: id, name i emoji!',
                     ephemeral: true
-                });
+                }).catch(() => {});
             }
 
             const addResult = ticketDB.addCategory(interaction.guild.id, id, name, emoji);
@@ -253,12 +253,12 @@ async function handleOpcje(interaction) {
                 await interaction.reply({
                     content: `✅ Dodano kategorię: ${emoji} **${name}** (ID: ${id})`,
                     ephemeral: true
-                });
+                }).catch(() => {});
             } else {
                 await interaction.reply({
                     content: `❌ ${addResult.error}`,
                     ephemeral: true
-                });
+                }).catch(() => {});
             }
             break;
 
@@ -267,7 +267,7 @@ async function handleOpcje(interaction) {
                 return await interaction.reply({
                     content: '❌ Musisz podać ID kategorii do usunięcia!',
                     ephemeral: true
-                });
+                }).catch(() => {});
             }
 
             const removeResult = ticketDB.removeCategory(interaction.guild.id, id);
@@ -275,12 +275,12 @@ async function handleOpcje(interaction) {
                 await interaction.reply({
                     content: `✅ Usunięto kategorię: ${id}`,
                     ephemeral: true
-                });
+                }).catch(() => {});
             } else {
                 await interaction.reply({
                     content: `❌ ${removeResult.error}`,
                     ephemeral: true
-                });
+                }).catch(() => {});
             }
             break;
 
@@ -295,7 +295,7 @@ async function handleOpcje(interaction) {
                 .setFooter({ text: `Łącznie: ${categories.length} kategorii` })
                 .setTimestamp();
 
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ embeds: [embed], ephemeral: true }).catch(() => {});
             break;
 
         case 'reset':
@@ -303,7 +303,7 @@ async function handleOpcje(interaction) {
             await interaction.reply({
                 content: '✅ Zresetowano kategorie do domyślnych (Błąd, Sojusz)',
                 ephemeral: true
-            });
+            }).catch(() => {});
             break;
     }
 }
