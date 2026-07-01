@@ -39,6 +39,12 @@
       "createdAt": "2026-06-10T16:16:06.791Z",
       "status": "closed",
       "closedAt": "2026-06-10T16:16:12.495Z"
+    },
+    "1521772850883596412": {
+      "userId": "1176148303084265593",
+      "category": "dolaczenie",
+      "createdAt": "2026-07-01T07:01:34.080Z",
+      "status": "open"
     }
   }
 }

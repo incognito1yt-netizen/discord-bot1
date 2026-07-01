@@ -18,10 +18,6 @@ class TicketDatabase {
             fs.writeFileSync(TICKETS_PATH, JSON.stringify({}, null, 2), 'utf8');
             Logger.info('Utworzono plik bazy danych ticketów');
         }
-        if (!fs.existsSync(TICKET_CONFIG_PATH)) {
-            fs.writeFileSync(TICKET_CONFIG_PATH, JSON.stringify({}, null, 2), 'utf8');
-            Logger.info('Utworzono plik konfiguracji ticketów');
-        }
     }
 
     getTickets(guildId) {
