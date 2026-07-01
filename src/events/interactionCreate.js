@@ -145,7 +145,8 @@ async function handleTicketCategory(interaction) {
     }
     await interaction.update({ content: '🔄 Tworzenie ticketa...', embeds: [], components: [] });
     try {
-        const channelName = `ticket-${interaction.user.username}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        const suffix = Math.random().toString(36).substring(2, 6);
+        const channelName = `ticket-${interaction.user.username}-${suffix}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
         const ticketChannel = await interaction.guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
