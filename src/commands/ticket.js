@@ -88,6 +88,28 @@ async function handleSetup(interaction) {
         );
 
     try {
+        const trackedPanels = messagesDB.getMessagesByType(interaction.guild.id, 'ticket_panel');
+        for (const [msgId, msg] of Object.entries(trackedPanels)) {
+            if (msg.channelId === channel.id) {
+                try {
+                    const oldMsg = await channel.messages.fetch(msgId).catch(() => null);
+                    if (oldMsg) await oldMsg.delete().catch(() => {});
+                } catch (e) {}
+                messagesDB.deleteMessage(interaction.guild.id, msgId);
+            }
+        }
+
+        const recentMessages = await channel.messages.fetch({ limit: 20 });
+        for (const [, msg] of recentMessages) {
+            if (msg.author.id === interaction.client.user.id && msg.embeds.length > 0) {
+                const title = msg.embeds[0].title || '';
+                if (title.includes('System Ticketów')) {
+                    await msg.delete().catch(() => {});
+                    messagesDB.deleteMessage(interaction.guild.id, msg.id);
+                }
+            }
+        }
+
         const msg = await channel.send({ embeds: [embed], components: [row] });
 
         const description = '**Potrzebujesz pomocy?**\n\n' +
