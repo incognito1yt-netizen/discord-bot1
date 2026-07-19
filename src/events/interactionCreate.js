@@ -147,14 +147,19 @@ async function handleTicketCategory(interaction) {
     try {
         const suffix = Math.random().toString(36).substring(2, 6);
         const channelName = `ticket-${interaction.user.username}-${suffix}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        const ticketAccessRole = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === 'ticket.access');
+        const permissionOverwrites = [
+            { id: interaction.guild.id, deny: [PermissionFlagsBits.ViewChannel] },
+            { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },
+            { id: interaction.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels] },
+        ];
+        if (ticketAccessRole) {
+            permissionOverwrites.push({ id: ticketAccessRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] });
+        }
         const ticketChannel = await interaction.guild.channels.create({
             name: channelName,
             type: ChannelType.GuildText,
-            permissionOverwrites: [
-                { id: interaction.guild.id, deny: [PermissionFlagsBits.ViewChannel] },
-                { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },
-                { id: interaction.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels] },
-            ],
+            permissionOverwrites,
         });
         ticketDB.createTicket(interaction.guild.id, ticketChannel.id, interaction.user.id, categoryId);
 

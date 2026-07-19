@@ -44,7 +44,18 @@
       },
       "trackedAt": "2026-07-01T07:37:42.410Z"
     },
-    "1521782470691786923": {
+    "1521783734540701730": {
+      "type": "ticket_panel",
+      "channelId": "1516785722625888296",
+      "config": {
+        "title": "🎫 System Ticketów",
+        "description": "**Potrzebujesz pomocy?**\n\nKliknij przycisk poniżej aby utworzyć ticket.\nPo kliknięciu wybierz kategorię:\n\n🐛 **Błąd**\n🤝 **Sojusz**\n⚔️ **Dołączenie do klanu**\n\n⚠️ Niepotrzebne tickety będą zamykane!",
+        "color": "#5865f2",
+        "footer": "Kliknij przycisk aby rozpocząć"
+      },
+      "trackedAt": "2026-07-01T07:44:49.012Z"
+    },
+    "1521783766207692884": {
       "type": "ticket_panel",
       "channelId": "1521769575954382850",
       "config": {
@@ -53,7 +64,7 @@
         "color": "#5865f2",
         "footer": "Kliknij przycisk aby rozpocząć"
       },
-      "trackedAt": "2026-07-01T07:39:47.713Z"
+      "trackedAt": "2026-07-01T07:44:56.549Z"
     }
   }
 }
