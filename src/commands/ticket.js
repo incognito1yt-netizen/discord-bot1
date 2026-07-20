@@ -281,6 +281,7 @@ async function handleOpcje(interaction) {
 
             const addResult = ticketDB.addCategory(interaction.guild.id, id, name, emoji);
             if (addResult.success) {
+                await updateTicketPanel(interaction.guild);
                 await interaction.reply({
                     content: `✅ Dodano kategorię: ${emoji} **${name}** (ID: ${id})`,
                     ephemeral: true
@@ -303,6 +304,7 @@ async function handleOpcje(interaction) {
 
             const removeResult = ticketDB.removeCategory(interaction.guild.id, id);
             if (removeResult.success) {
+                await updateTicketPanel(interaction.guild);
                 await interaction.reply({
                     content: `✅ Usunięto kategorię: ${id}`,
                     ephemeral: true
@@ -331,10 +333,43 @@ async function handleOpcje(interaction) {
 
         case 'reset':
             ticketDB.resetCategories(interaction.guild.id);
+            await updateTicketPanel(interaction.guild);
             await interaction.reply({
-                content: '✅ Zresetowano kategorie do domyślnych (Błąd, Sojusz)',
+                content: '✅ Zresetowano kategorie do domyślnych (Błąd, Sojusz, Dołączenie do klanu)',
                 ephemeral: true
             }).catch(() => {});
             break;
+    }
+}
+
+async function updateTicketPanel(guild) {
+    const panels = messagesDB.getMessagesByType(guild.id, 'ticket_panel');
+    const categories = ticketDB.getCategories(guild.id);
+
+    const embed = new EmbedBuilder()
+        .setColor('#5865f2')
+        .setTitle('🎫 System Ticketów')
+        .setDescription(
+            '**Potrzebujesz pomocy?**\n\n' +
+            'Kliknij przycisk poniżej aby utworzyć ticket.\n' +
+            'Po kliknięciu wybierz kategorię:\n\n' +
+            categories.map(c => `${c.emoji} **${c.name}**`).join('\n') + '\n\n' +
+            '⚠️ Niepotrzebne tickety będą zamykane!'
+        )
+        .setFooter({ text: 'Kliknij przycisk aby rozpocząć' })
+        .setTimestamp();
+
+    for (const [msgId, panel] of Object.entries(panels)) {
+        try {
+            const channel = guild.channels.cache.get(panel.channelId);
+            if (!channel) continue;
+            const msg = await channel.messages.fetch(msgId).catch(() => null);
+            if (msg) {
+                await msg.edit({ embeds: [embed] });
+                Logger.success(`Zaktualizowano panel ticketów: ${msgId}`);
+            }
+        } catch (error) {
+            Logger.error('Błąd podczas aktualizacji panelu ticketów', error);
+        }
     }
 }
