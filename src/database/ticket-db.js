@@ -111,7 +111,10 @@ class TicketDatabase {
 
     addCategory(guildId, id, name, emoji) {
         try {
-            const data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            let data = {};
+            if (fs.existsSync(TICKET_CONFIG_PATH)) {
+                data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            }
             if (!data[guildId]) data[guildId] = this.getDefaultCategories();
 
             // Check if category exists
@@ -131,7 +134,10 @@ class TicketDatabase {
 
     removeCategory(guildId, id) {
         try {
-            const data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            let data = {};
+            if (fs.existsSync(TICKET_CONFIG_PATH)) {
+                data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            }
             if (!data[guildId]) return { success: false, error: 'Brak kategorii' };
 
             const index = data[guildId].findIndex(c => c.id === id);
@@ -151,7 +157,10 @@ class TicketDatabase {
 
     resetCategories(guildId) {
         try {
-            const data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            let data = {};
+            if (fs.existsSync(TICKET_CONFIG_PATH)) {
+                data = JSON.parse(fs.readFileSync(TICKET_CONFIG_PATH, 'utf8'));
+            }
             delete data[guildId];
             fs.writeFileSync(TICKET_CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8');
             return true;
